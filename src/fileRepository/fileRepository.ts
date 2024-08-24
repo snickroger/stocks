@@ -10,8 +10,8 @@ export class FileRepository {
     }
 
     public async getAllCachedResponses(): Promise<string[] | null> {
-        let yesterday = new Date();
-        let result: string[] = [];
+        const yesterday = new Date();
+        const result: string[] = [];
 
         yesterday.setDate(yesterday.getDate() - 1);
 

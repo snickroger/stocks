@@ -1,6 +1,6 @@
 import axios from "axios";
 import { env } from "process";
-import { FileRepository } from "../cache/fileRepository.js";
+import { FileRepository } from "../fileRepository/fileRepository.js";
 
 export class StocksApi {
     private readonly apiKey: string;
@@ -11,8 +11,8 @@ export class StocksApi {
         this.fileRepo = fileRepo;
     }
 
-    public async getStockPrices(stockSymbols: string[]): Promise<{ [symbol: string]: number }> {
-        const result: { [symbol: string]: number } = {};
+    public async getStockPrices(stockSymbols: string[]): Promise<Record<string, number>> {
+        const result: Record<string, number> = {};
         let responses: string[];
 
         const cachedResponses = await this.fileRepo.getAllCachedResponses();
@@ -44,7 +44,7 @@ export class StocksApi {
 
     private async getResponsesFromApi(stockSymbols: string[]): Promise<[symbol: string, datetime: string, json: string][]> {
         const responses: [symbol: string, datetime: string, json: string][] = [];
-        let count: number = 0;
+        let count = 0;
         for (const symbol of stockSymbols) {
             if (count === 8) {
                 console.log("Waiting one minute...");

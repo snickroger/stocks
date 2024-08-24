@@ -38,7 +38,7 @@ export class GoogleDrive {
         return sheetDataResponse.data.values!.map((row, index) => [row[0], `C${startRowIndex! + 2 + index}`]);
     }
 
-    public async updateSheet(updatedStockPrices: { [symbol: string]: { cell: string; price: number; }; }): Promise<void> {
+    public async updateSheet(updatedStockPrices: Record<string, { cell: string; price: number; }>): Promise<void> {
         for (const symbol of Object.keys(updatedStockPrices)) {
             const symbolData = updatedStockPrices[symbol];
             
