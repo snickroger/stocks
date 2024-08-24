@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  app:
+    image: node:20.11
+    working_dir: /stocks
+    container_name: stocks_app
+    command: sh -c "yarn && yarn build && node ./dist/app.js"
+    ports:
+      - "9229:9229"
+    env_file: variables.env
+    volumes:
+      - .:/stocks

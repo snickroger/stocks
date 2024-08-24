@@ -1,0 +1,6 @@
+/variables.env
+/node_modules
+/dist
+/.vscode
+/.tscache
+/_cache

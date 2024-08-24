@@ -1,0 +1,30 @@
+{
+  "name": "nrogers-stocks",
+  "version": "1.0.0",
+  "description": "Scared money don't make money",
+  "scripts": {
+    "start": "node ./dist/app.js",
+    "watch": "tsc -w",
+    "debug": "nodemon --legacy-watch --watch ./dist --inspect-brk=0.0.0.0:9229 --nolazy ./dist/app.js",
+    "build": "yarn && yarn run tsc",
+    "lint": "eslint -c .eslintrc.js --ext .ts src",
+    "lint-fix": "eslint --fix -c .eslintrc.js --ext .ts src"
+  },
+  "type": "module",
+  "author": "Nick Rogers",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@types/node": "^20.11.6",
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
+    "axios": "^1.7.5",
+    "eslint": "^9.9.1",
+    "eslint-plugin-import": "^2.29.1",
+    "google-auth-library": "^9.14.0",
+    "googleapis": "^142.0.0",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}
