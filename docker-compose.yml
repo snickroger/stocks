@@ -4,7 +4,7 @@ services:
     image: node:20.11
     working_dir: /stocks
     container_name: stocks_app
-    command: sh -c "yarn && yarn build && node ./dist/app.js"
+    command: sh -c "yarn start"
     ports:
       - "9229:9229"
     env_file: variables.env

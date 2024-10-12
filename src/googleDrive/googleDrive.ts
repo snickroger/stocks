@@ -27,8 +27,10 @@ export class GoogleDrive {
             spreadsheetId: this.googleSheetId
         });
 
-        const { startRowIndex, endRowIndex } = sheet.data.sheets![0].bandedRanges![0].range!;
+        //const { startRowIndex, endRowIndex } = sheet.data.sheets![0].bandedRanges![0].range!;
 
+        const startRowIndex = 0;
+        const endRowIndex = 20;
         const sheetDataResponse = await this.sheets.spreadsheets.values.get({
             auth: this.oAuth2Client,
             spreadsheetId: this.googleSheetId,

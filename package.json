@@ -6,7 +6,7 @@
     "start": "node ./dist/app.js",
     "watch": "tsc -w",
     "debug": "nodemon --legacy-watch --watch ./dist --inspect-brk=0.0.0.0:9229 --nolazy ./dist/app.js",
-    "build": "yarn && yarn run tsc",
+    "build": "yarn && yarn run tsc --build . --verbose",
     "lint": "eslint -c .eslintrc.js --ext .ts src",
     "lint-fix": "eslint --fix -c .eslintrc.js --ext .ts src"
   },
