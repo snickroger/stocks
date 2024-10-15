@@ -43,7 +43,7 @@ export class GoogleDrive {
     public async updateSheet(updatedStockPrices: Record<string, { cell: string; price: number; }>): Promise<void> {
         for (const symbol of Object.keys(updatedStockPrices)) {
             const symbolData = updatedStockPrices[symbol];
-            
+
             await this.sheets.spreadsheets.values.update({
                 auth: this.oAuth2Client,
                 spreadsheetId: this.googleSheetId,
@@ -54,5 +54,56 @@ export class GoogleDrive {
                 }
             });
         }
+    }
+
+    public async updateGrowthSheet(): Promise<void> {
+        const growthSheetId = 932737694; // TODO move to variables
+        const today = new Date(); // TODO add date library
+        const todayStr = `${today.getMonth()+1}/${today.getDate()-1}/${today.getFullYear()}`;
+
+        // get the unformatted total for today from the main sheet
+
+        const sheetDataResponse = await this.sheets.spreadsheets.values.get({
+            auth: this.oAuth2Client,
+            spreadsheetId: this.googleSheetId,
+            range: 'H5',
+            valueRenderOption: 'UNFORMATTED_VALUE'
+        });
+
+        const todaysTotal = sheetDataResponse.data.values![0][0];
+
+        // insert a blank row to the growth sheet
+
+        await this.sheets.spreadsheets.batchUpdate({
+            auth: this.oAuth2Client,
+            spreadsheetId: this.googleSheetId,
+            requestBody: {
+                requests: [
+                    {
+                        insertDimension: {
+                            range: {
+                                sheetId: growthSheetId,
+                                dimension: 'ROWS',
+                                startIndex: 1,
+                                endIndex: 2
+                            },
+                            inheritFromBefore: true
+                        }
+                    }
+                ]
+            }
+        });
+
+        // write the total to the growth sheet
+
+        await this.sheets.spreadsheets.values.update({
+            auth: this.oAuth2Client,
+            spreadsheetId: this.googleSheetId,
+            range: 'Total Growth!A2:D2',
+            valueInputOption: 'USER_ENTERED',
+            requestBody: {
+                values: [[todayStr, todaysTotal, '=IF(B3>0,B2-B3,"")', '=IF(B3>0,(B2-B3)/ABS(B3),"")']]
+            }
+        });
     }
 }

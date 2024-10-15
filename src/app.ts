@@ -15,3 +15,4 @@ for (const symbol of currentStockSymbols) {
 }
 
 await google.updateSheet(updatedStockPrices);
+await google.updateGrowthSheet();
