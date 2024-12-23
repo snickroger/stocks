@@ -19,7 +19,7 @@ export class GoogleDrive {
         const clientSecret = env.GOOGLE_CLIENTSECRET!;
         const refreshToken = env.GOOGLE_REFRESHTOKEN!;
 
-        this.oAuth2Client = new google.auth.OAuth2(clientId, clientSecret);
+        this.oAuth2Client = new OAuth2Client(clientId, clientSecret);
         this.oAuth2Client.setCredentials({ refresh_token: refreshToken });
     }
 
