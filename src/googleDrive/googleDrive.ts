@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+import { tz } from "@date-fns/tz";
 import { OAuth2Client } from "google-auth-library";
 import { google, sheets_v4 } from "googleapis";
 import { env } from "process";
@@ -27,10 +29,8 @@ export class GoogleDrive {
             spreadsheetId: this.googleSheetId
         });
 
-        //const { startRowIndex, endRowIndex } = sheet.data.sheets![0].bandedRanges![0].range!;
+        const { startRowIndex, endRowIndex } = sheet.data.sheets![0].bandedRanges![0].range!;
 
-        const startRowIndex = 0;
-        const endRowIndex = 20;
         const sheetDataResponse = await this.sheets.spreadsheets.values.get({
             auth: this.oAuth2Client,
             spreadsheetId: this.googleSheetId,
@@ -57,9 +57,25 @@ export class GoogleDrive {
     }
 
     public async updateGrowthSheet(): Promise<void> {
-        const growthSheetId = 932737694; // TODO move to variables
-        const today = new Date(); // TODO add date library
-        const todayStr = `${today.getMonth()+1}/${today.getDate()-1}/${today.getFullYear()}`;
+        const today = new Date();
+        const todayStr = format(today, 'M/dd/yyyy', { in: tz("America/New_York") })
+
+        // get the spreadsheet data
+        const sheet = await this.sheets.spreadsheets.get({
+            auth: this.oAuth2Client,
+            spreadsheetId: this.googleSheetId
+        });
+
+        const growthSheet = sheet.data.sheets![2];
+        const growthSheetId = growthSheet.properties?.sheetId;
+        const endRowIndex = growthSheet.bandedRanges![0].range!.endRowIndex!;
+        const conditionalFormat1 = growthSheet.conditionalFormats![0];
+        conditionalFormat1.ranges![0].startRowIndex = 1;
+        conditionalFormat1.ranges![0].endRowIndex = endRowIndex + 1;
+
+        const conditionalFormat2 = growthSheet.conditionalFormats![1];
+        conditionalFormat2.ranges![0].startRowIndex = 1;
+        conditionalFormat2.ranges![0].endRowIndex = endRowIndex + 1;
 
         // get the unformatted total for today from the main sheet
 
@@ -72,7 +88,7 @@ export class GoogleDrive {
 
         const todaysTotal = sheetDataResponse.data.values![0][0];
 
-        // insert a blank row to the growth sheet
+        // insert a blank row to the growth sheet and update the conditional formatting ranges
 
         await this.sheets.spreadsheets.batchUpdate({
             auth: this.oAuth2Client,
@@ -88,6 +104,29 @@ export class GoogleDrive {
                                 endIndex: 2
                             },
                             inheritFromBefore: true
+                        }
+                    }
+                ]
+            }
+        });
+
+        await this.sheets.spreadsheets.batchUpdate({
+            auth: this.oAuth2Client,
+            spreadsheetId: this.googleSheetId,
+            requestBody: {
+                requests: [
+                    {
+                        updateConditionalFormatRule: {
+                            index: 0,
+                            sheetId: growthSheetId,
+                            rule: conditionalFormat1
+                        }
+                    },
+                    {
+                        updateConditionalFormatRule: {
+                            index: 1,
+                            sheetId: growthSheetId,
+                            rule: conditionalFormat2
                         }
                     }
                 ]

@@ -1,6 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { env } from "node:process";
+import { add, format } from "date-fns";
+import { tz } from "@date-fns/tz";
+
 
 export class FileRepository {
     private readonly cacheDir: string;
@@ -10,13 +13,9 @@ export class FileRepository {
     }
 
     public async getAllCachedResponses(): Promise<string[] | null> {
-        const yesterday = new Date();
+        const todayIso = format(new Date(), "yyyy-MM-dd", { in: tz("America/New_York") });
+        const yesterdayIso = format(add(new Date(), { days: -1 }), "yyyy-MM-dd", { in: tz("America/New_York") });
         const result: string[] = [];
-
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        const todayIso = new Date().toISOString().slice(0, 10);
-        const yesterdayIso = yesterday.toISOString().slice(0, 10);
 
         const todayDir = path.join(this.cacheDir, todayIso);
         const yesterdayDir = path.join(this.cacheDir, yesterdayIso);
@@ -43,7 +42,7 @@ export class FileRepository {
     public async writeResponseFile(symbol: string, datetime: string, jsonStr: string): Promise<void> {
         const dir = path.join(this.cacheDir, datetime);
         if (!fs.existsSync(dir)) {
-          await fs.promises.mkdir(dir, { recursive: true });
+            await fs.promises.mkdir(dir, { recursive: true });
         }
 
         const filePath = path.join(dir, `${symbol}.json`);
