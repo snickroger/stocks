@@ -11,6 +11,10 @@ export class GoogleDrive {
 
     private readonly googleSheetId: string;
 
+    private readonly holdingsSheetIndex: number;
+
+    private readonly growthSheetIndex: number;
+
     constructor() {
         this.sheets = google.sheets('v4');
         this.googleSheetId = env.GOOGLE_SHEETID!;
@@ -18,6 +22,9 @@ export class GoogleDrive {
         const clientId = env.GOOGLE_CLIENTID!;
         const clientSecret = env.GOOGLE_CLIENTSECRET!;
         const refreshToken = env.GOOGLE_REFRESHTOKEN!;
+
+        this.holdingsSheetIndex = parseInt(env.HOLDINGS_SHEET_INDEX!, 10);
+        this.growthSheetIndex = parseInt(env.GROWTH_SHEET_INDEX!, 10);
 
         this.oAuth2Client = new OAuth2Client(clientId, clientSecret);
         this.oAuth2Client.setCredentials({ refresh_token: refreshToken });
@@ -29,25 +36,35 @@ export class GoogleDrive {
             spreadsheetId: this.googleSheetId
         });
 
-        const { startRowIndex, endRowIndex } = sheet.data.sheets![0].bandedRanges![0].range!;
+        const holdingsSheet = sheet.data.sheets![this.holdingsSheetIndex];
+        const { startRowIndex, endRowIndex } = holdingsSheet.bandedRanges![0].range!;
+        const holdingsSheetName = holdingsSheet.properties?.title;
 
         const sheetDataResponse = await this.sheets.spreadsheets.values.get({
             auth: this.oAuth2Client,
             spreadsheetId: this.googleSheetId,
-            range: `A${startRowIndex! + 2}:A${endRowIndex!}`,
+            range: `${holdingsSheetName}!A${startRowIndex! + 2}:A${endRowIndex!}`,
         });
 
         return sheetDataResponse.data.values!.map((row, index) => [row[0], `C${startRowIndex! + 2 + index}`]);
     }
 
     public async updateSheet(updatedStockPrices: Record<string, { cell: string; price: number; }>): Promise<void> {
+        const sheet = await this.sheets.spreadsheets.get({
+            auth: this.oAuth2Client,
+            spreadsheetId: this.googleSheetId
+        });
+
+        const holdingsSheet = sheet.data.sheets![this.holdingsSheetIndex];
+        const holdingsSheetName = holdingsSheet.properties?.title;
+
         for (const symbol of Object.keys(updatedStockPrices)) {
             const symbolData = updatedStockPrices[symbol];
 
             await this.sheets.spreadsheets.values.update({
                 auth: this.oAuth2Client,
                 spreadsheetId: this.googleSheetId,
-                range: symbolData.cell,
+                range: `${holdingsSheetName}!${symbolData.cell}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: {
                     values: [[symbolData.price]]
@@ -66,9 +83,15 @@ export class GoogleDrive {
             spreadsheetId: this.googleSheetId
         });
 
-        const growthSheet = sheet.data.sheets![2];
+        const holdingsSheet = sheet.data.sheets![this.holdingsSheetIndex];
+        const holdingsSheetName = holdingsSheet.properties?.title;
+
+        const growthSheet = sheet.data.sheets![this.growthSheetIndex];
         const growthSheetId = growthSheet.properties?.sheetId;
+        const growthSheetName = growthSheet.properties?.title;
+
         const endRowIndex = growthSheet.bandedRanges![0].range!.endRowIndex!;
+
         const conditionalFormat1 = growthSheet.conditionalFormats![0];
         conditionalFormat1.ranges![0].startRowIndex = 1;
         conditionalFormat1.ranges![0].endRowIndex = endRowIndex + 1;
@@ -82,7 +105,7 @@ export class GoogleDrive {
         const sheetDataResponse = await this.sheets.spreadsheets.values.get({
             auth: this.oAuth2Client,
             spreadsheetId: this.googleSheetId,
-            range: 'H5',
+            range: `${holdingsSheetName}!H5`,
             valueRenderOption: 'UNFORMATTED_VALUE'
         });
 
@@ -138,7 +161,7 @@ export class GoogleDrive {
         await this.sheets.spreadsheets.values.update({
             auth: this.oAuth2Client,
             spreadsheetId: this.googleSheetId,
-            range: 'Total Growth!A2:D2',
+            range: `${growthSheetName}!A2:D2`,
             valueInputOption: 'USER_ENTERED',
             requestBody: {
                 values: [[todayStr, todaysTotal, '=IF(B3>0,B2-B3,"")', '=IF(B3>0,(B2-B3)/ABS(B3),"")']]
