@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { env } from "node:process";
-import { add, format } from "date-fns";
+import { format } from "date-fns";
 import { tz } from "@date-fns/tz";
 
 
@@ -14,23 +14,15 @@ export class FileRepository {
 
     public async getAllCachedResponses(): Promise<string[] | null> {
         const todayIso = format(new Date(), "yyyy-MM-dd", { in: tz("America/New_York") });
-        const yesterdayIso = format(add(new Date(), { days: -1 }), "yyyy-MM-dd", { in: tz("America/New_York") });
         const result: string[] = [];
 
         const todayDir = path.join(this.cacheDir, todayIso);
-        const yesterdayDir = path.join(this.cacheDir, yesterdayIso);
 
-        let dirToUse: string;
-
-        if (fs.existsSync(todayDir)) {
-            dirToUse = todayDir;
-        } else if (fs.existsSync(yesterdayDir)) {
-            dirToUse = yesterdayDir;
-        } else {
+        if (!fs.existsSync(todayDir)) {
             return null;
         }
 
-        const allFiles = fs.readdirSync(dirToUse).map(fileName => path.join(dirToUse, fileName));
+        const allFiles = fs.readdirSync(todayDir).map(fileName => path.join(todayDir, fileName));
         for (const file of allFiles) {
             const fileContents = await fs.promises.readFile(file);
             result.push(fileContents.toString());
