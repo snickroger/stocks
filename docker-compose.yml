@@ -1,10 +1,9 @@
-version: '3.8'
 services:
   app:
-    image: node:20.11
+    image: node:24.15
     working_dir: /stocks
     container_name: stocks_app
-    command: sh -c "yarn start"
+    command: sh -c "npm run start"
     ports:
       - "9229:9229"
     env_file: variables.env
