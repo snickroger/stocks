@@ -3,4 +3,5 @@
 /dist
 /.vscode
 /.tscache
+/.claude
 /_cache

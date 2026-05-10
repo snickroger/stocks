@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Scared money don't make money",
   "scripts": {
+    "prestart": "npm run build",
     "start": "node ./dist/app.js",
     "watch": "tsc -w",
     "debug": "nodemon --legacy-watch --watch ./dist --inspect-brk=0.0.0.0:9229 --nolazy ./dist/app.js",

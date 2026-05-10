@@ -1,13 +1,12 @@
 import axios from "axios";
-import { env } from "process";
 import { FileRepository } from "../fileRepository/fileRepository.js";
 
 export class StocksApi {
     private readonly apiKey: string;
     private readonly fileRepo: FileRepository;
 
-    constructor(fileRepo: FileRepository) {
-        this.apiKey = env.TWELVEDATA_APIKEY!;
+    constructor(apiKey: string, fileRepo: FileRepository) {
+        this.apiKey = apiKey;
         this.fileRepo = fileRepo;
     }
 

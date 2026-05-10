@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { tz } from "@date-fns/tz";
 import { OAuth2Client } from "google-auth-library";
 import { google, sheets_v4 } from "googleapis";
-import { env } from "process";
+import { GoogleConfig } from "../config.js";
 
 export class GoogleDrive {
     private readonly sheets: sheets_v4.Sheets;
@@ -15,19 +15,14 @@ export class GoogleDrive {
 
     private readonly growthSheetIndex: number;
 
-    constructor() {
+    constructor(config: GoogleConfig) {
         this.sheets = google.sheets('v4');
-        this.googleSheetId = env.GOOGLE_SHEETID!;
+        this.googleSheetId = config.sheetId;
+        this.holdingsSheetIndex = config.holdingsSheetIndex;
+        this.growthSheetIndex = config.growthSheetIndex;
 
-        const clientId = env.GOOGLE_CLIENTID!;
-        const clientSecret = env.GOOGLE_CLIENTSECRET!;
-        const refreshToken = env.GOOGLE_REFRESHTOKEN!;
-
-        this.holdingsSheetIndex = parseInt(env.HOLDINGS_SHEET_INDEX!, 10);
-        this.growthSheetIndex = parseInt(env.GROWTH_SHEET_INDEX!, 10);
-
-        this.oAuth2Client = new OAuth2Client(clientId, clientSecret);
-        this.oAuth2Client.setCredentials({ refresh_token: refreshToken });
+        this.oAuth2Client = new OAuth2Client(config.clientId, config.clientSecret);
+        this.oAuth2Client.setCredentials({ refresh_token: config.refreshToken });
     }
 
     public async getAllStockSymbols(): Promise<[symbol: string, cell: string][]> {

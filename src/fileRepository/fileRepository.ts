@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { env } from "node:process";
 import { format } from "date-fns";
 import { tz } from "@date-fns/tz";
 
@@ -8,8 +7,8 @@ import { tz } from "@date-fns/tz";
 export class FileRepository {
     private readonly cacheDir: string;
 
-    constructor() {
-        this.cacheDir = env.CACHE_DIR!;
+    constructor(cacheDir: string) {
+        this.cacheDir = cacheDir;
     }
 
     public async getAllCachedResponses(): Promise<string[] | null> {
