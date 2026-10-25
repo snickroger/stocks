@@ -11,30 +11,31 @@ async function main(): Promise<void> {
   const stocks = new StocksApi(config.twelveDataApiKey, fileRepo);
 
   const currentStockSymbols = await google.getAllStockSymbols();
-  const currentStockPrices = await stocks.getStockPrices(currentStockSymbols.map(s => s[0]));
+  console.log("Fetched %d stock symbols from sheet", currentStockSymbols.length);
+
+  const currentStockPrices = await stocks.getStockPrices(currentStockSymbols.map(([symbol]) => symbol));
 
   const updatedStockPrices: Record<string, { cell: string, price: number }> = {};
-  for (const symbol of currentStockSymbols) {
-    updatedStockPrices[symbol[0]] = { cell: symbol[1], price: currentStockPrices[symbol[0]] };
+  for (const [symbol, cell] of currentStockSymbols) {
+    const price = currentStockPrices[symbol];
+    if (price === undefined) {
+      throw new Error(`Missing price data for symbol "${symbol}" (cell ${cell})`);
+    }
+    updatedStockPrices[symbol] = { cell, price };
   }
 
+  console.log("Updating holdings sheet...");
   await google.updateSheet(updatedStockPrices);
+
+  console.log("Updating growth sheet...");
   await google.updateGrowthSheet();
+
+  console.log("Stock sheet update complete.");
 }
-
-process.on("unhandledRejection", reason => {
-  console.error("Unhandled rejection:", reason);
-  process.exit(1);
-});
-
-process.on("uncaughtException", err => {
-  console.error("Uncaught exception:", err);
-  process.exit(1);
-});
 
 try {
   await main();
 } catch (err) {
   console.error("Fatal error:", err);
-  process.exit(1);
+  process.exitCode = 1;
 }
