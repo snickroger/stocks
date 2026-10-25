@@ -1,6 +1,6 @@
 services:
   app:
-    image: node:24.15
+    image: node:26.12
     working_dir: /stocks
     container_name: stocks_app
     command: sh -c "npm run start"
